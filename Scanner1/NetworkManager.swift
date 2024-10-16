@@ -7,7 +7,7 @@ class NetworkManager {
     private init() {}
     
     private let ocrServerUrl = "http://95.70.137.98:8000" // OCR sunucu adresi
-    private let ttsServerUrl = "http://35.198.44.239:7001" // TTS sunucu adesiiiii
+    private let ttsServerUrl = "http://35.198.44.239:7001" // TTS sunucu adersi
     
     private var audioPlayer: AVAudioPlayer?
     
