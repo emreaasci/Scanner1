@@ -7,7 +7,7 @@ class NetworkManager {
     private init() {}
     
     private let ocrServerUrl = "http://95.70.137.98:8000" // OCR sunucu adresi
-    private let ttsServerUrl = "http://35.198.16.160:7001" // TTS sunucu adesiii
+    private let ttsServerUrl = "http://34.95.206.126:7010" // TTS sunucu adesiii
     
     private var audioPlayer: AVAudioPlayer?
     
@@ -114,6 +114,10 @@ class NetworkManager {
                     if let result = statusResponse.result {
                         let formattedResult = """
                         \(result)
+                        
+                        
+                        
+                        
                         
                         """
                         completion(.success(formattedResult))
