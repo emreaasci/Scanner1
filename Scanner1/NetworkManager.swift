@@ -6,8 +6,8 @@ class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
     
-    private let ocrServerUrl = "http://95.70.137.98:8000" // OCR sunucu adresi
-    private let ttsServerUrl = "http://35.198.44.239:7001" // TTS sunucu adersi
+    private let ocrServerUrl = "http://35.198.45.244:8000" // OCR sunucu adresi
+    private let ttsServerUrl = "http://35.198.45.244:7001" // TTS sunucu adersi
     
     private var audioPlayer: AVAudioPlayer?
     

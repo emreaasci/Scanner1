@@ -9,63 +9,116 @@ struct ContentView: View {
     @State private var isPlayingAudio = false
     @State private var selectedText: ScanData?
     @State private var audioProgress: Float = 0.0
+    @State private var customText: String = ""
+    @State private var showTextInput = false
     
     var body: some View {
         NavigationView {
             VStack {
-                if isProcessing {
-                    ProgressView("OCR İşlemi Devam Ediyor")
-                        .padding()
+                // Segment kontrolü
+                Picker("Mode", selection: $showTextInput) {
+                    Text("Tarama").tag(false)
+                    Text("Metin Girişi").tag(true)
                 }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
                 
-                if let error = errorMessage {
-                    Text("Hata: \(error)")
-                        .foregroundColor(.red)
-                        .padding()
-                }
-                
-                if texts.isEmpty {
-                    Text("Henüz tarama yok").font(.title)
-                } else {
-                    List(texts) { text in
-                        VStack(alignment: .leading) {
-                            Text(text.content)
-                                .lineLimit(2)
-                                .onTapGesture {
-                                    selectedText = text
-                                }
-                            HStack {
-                                Button(action: {
-                                    guard !isPlayingAudio else { return }
-                                    readText(text.content)
-                                }) {
-                                    Label("Oku", systemImage: "play.circle")
-                                }
-                                .disabled(isPlayingAudio)
-                                .buttonStyle(BorderedButtonStyle())
-                                
-                                Button(action: {
-                                    saveAudio(text.content)
-                                }) {
-                                    Label("Kaydet", systemImage: "square.and.arrow.down")
-                                }
-                                .buttonStyle(BorderedButtonStyle())
+                if showTextInput {
+                    // Metin girişi görünümü
+                    VStack {
+                        TextEditor(text: $customText)
+                            .frame(minHeight: 100)
+                            .border(Color.gray, width: 1)
+                            .padding()
+                        
+                        HStack {
+                            Button(action: {
+                                guard !isPlayingAudio else { return }
+                                readText(customText)
+                            }) {
+                                Label("Seslendir", systemImage: "play.circle")
                             }
-                            if isPlayingAudio {
-                                ProgressView(value: audioProgress)
-                                    .progressViewStyle(LinearProgressViewStyle())
+                            .disabled(isPlayingAudio || customText.isEmpty)
+                            .buttonStyle(BorderedButtonStyle())
+                            
+                            Button(action: {
+                                saveAudio(customText)
+                            }) {
+                                Label("Kaydet", systemImage: "square.and.arrow.down")
+                            }
+                            .disabled(customText.isEmpty)
+                            .buttonStyle(BorderedButtonStyle())
+                        }
+                        .padding()
+                        
+                        if isPlayingAudio {
+                            ProgressView(value: audioProgress)
+                                .progressViewStyle(LinearProgressViewStyle())
+                                .padding()
+                        }
+                    }
+                } else {
+                    // Orijinal tarama görünümü
+                    if isProcessing {
+                        ProgressView("OCR İşlemi Devam Ediyor")
+                            .padding()
+                    }
+                    
+                    if let error = errorMessage {
+                        Text("Hata: \(error)")
+                            .foregroundColor(.red)
+                            .padding()
+                    }
+                    
+                    if texts.isEmpty {
+                        Text("Henüz tarama yok").font(.title)
+                    } else {
+                        List(texts) { text in
+                            VStack(alignment: .leading) {
+                                Text(text.content)
+                                    .lineLimit(2)
+                                    .onTapGesture {
+                                        selectedText = text
+                                    }
+                                HStack {
+                                    Button(action: {
+                                        guard !isPlayingAudio else { return }
+                                        readText(text.content)
+                                    }) {
+                                        Label("Oku", systemImage: "play.circle")
+                                    }
+                                    .disabled(isPlayingAudio)
+                                    .buttonStyle(BorderedButtonStyle())
+                                    
+                                    Button(action: {
+                                        saveAudio(text.content)
+                                    }) {
+                                        Label("Kaydet", systemImage: "square.and.arrow.down")
+                                    }
+                                    .buttonStyle(BorderedButtonStyle())
+                                }
+                                if isPlayingAudio {
+                                    ProgressView(value: audioProgress)
+                                        .progressViewStyle(LinearProgressViewStyle())
+                                }
                             }
                         }
                     }
                 }
             }
             .navigationTitle("OCR ve TTS")
-            .navigationBarItems(trailing: Button(action: {
-                self.showScannerSheet = true
-            }) {
-                Image(systemName: "doc.text.viewfinder")
-                    .font(.title)
-            })
+            .navigationBarItems(
+                trailing: Group {
+                    if !showTextInput {
+                        Button(action: {
+                            self.showScannerSheet = true
+                        }) {
+                            Image(systemName: "doc.text.viewfinder")
+                                .font(.title)
+                        }
+                    }
+                }
+            )
             .sheet(isPresented: $showScannerSheet, content: {
                 self.makeScannerView()
             })
