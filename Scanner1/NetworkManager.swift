@@ -6,8 +6,8 @@ class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
     
-    private let ocrServerUrl = "http://35.198.45.244:8000" // OCR sunucu adresi
-    private let ttsServerUrl = "http://35.198.45.244:7001" // TTS sunucu adersi
+    private let ocrServerUrl = "http://34.95.156.26:8000" // OCR sunucu adresi
+    private let ttsServerUrl = "http://35.198.21.226:7001" // TTS sunucu adersi
     
     private var audioPlayer: AVAudioPlayer?
     
@@ -112,14 +112,23 @@ class NetworkManager {
                 switch statusResponse.status {
                 case "completed":
                     if let result = statusResponse.result {
-                        let formattedResult = """
-                        \(result)
-                        
-                        
-                        
-                        
-                        
-                        """
+                           let expenseType = statusResponse.expense_type?.description ?? "Bilinmiyor"
+                        let paymentType = statusResponse.payment_type?.description ?? "none"
+                           let currencyType = statusResponse.currency_type?.description ?? "TL"
+                           
+                           let formattedResult = """
+                           \(result)
+                           
+                           Tutar: \(statusResponse.tutar ?? "NaN")
+                           KDV: \(statusResponse.topkdv ?? "NaN")
+                           Tarih: \(statusResponse.tarih ?? "NaN") 
+                           Saat: \(statusResponse.saat ?? "NaN")
+                           Fiş No: \(statusResponse.fis_no ?? "NaN")
+                           Yer: \(statusResponse.place ?? "NaN")
+                           Harcama Tipi: \(expenseType)
+                           Ödeme Tipi: \(paymentType) 
+                           Para Birimi: \(currencyType)
+                           """
                         completion(.success(formattedResult))
                     } else {
                         completion(.failure(NSError(domain: "com.yourapp", code: 6, userInfo: [NSLocalizedDescriptionKey: "Sonuç bulunamadı"])))
@@ -156,6 +165,9 @@ class NetworkManager {
 
         return newImage ?? image
     }
+    
+    
+    
     
 
     func sendTextToTTS(text: String, language: String = "tr", maxRetries: Int = 3, progress: @escaping (Float) -> Void, completion: @escaping (Result<Data, Error>) -> Void) {
@@ -273,14 +285,38 @@ struct OCRStatusResponse: Codable {
     let topkdv: String?
     let tarih: String?
     let saat: String?
+    let fis_no: String?
+    let place: String?
+    let expense_type: ExpenseType?
+    let payment_type: PaymentType?
+    let currency_type: CurrencyType?
     
     enum CodingKeys: String, CodingKey {
-        case status, result, message, tutar, topkdv, tarih, saat
-        case processTime = "process_time"
-    }
+           case status, result, message, tutar, topkdv, tarih, saat, fis_no, place
+           case processTime = "process_time"
+           case expense_type
+           case payment_type
+           case currency_type
+       }
 }
 
 struct TTSRequest: Codable {
     let text: String
     let language: String
+}
+
+
+struct ExpenseType: Codable {
+   let value: Int
+   let description: String
+}
+
+struct PaymentType: Codable {
+   let value: Int
+   let description: String
+}
+
+struct CurrencyType: Codable {
+   let value: Int
+   let description: String
 }
